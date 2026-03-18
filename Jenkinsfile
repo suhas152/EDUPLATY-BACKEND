@@ -55,7 +55,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     bat "kubectl set image deployment/eduplaty-backend eduplaty-backend=%IMAGE%:%BUILD_NUMBER% -n eduplaty"
-                    bat "kubectl rollout status deployment/eduplaty-backend -n eduplaty --timeout=120s"
+                    bat "kubectl rollout status deployment/eduplaty-backend -n eduplaty --timeout=300s"
                 }
             }
         }
