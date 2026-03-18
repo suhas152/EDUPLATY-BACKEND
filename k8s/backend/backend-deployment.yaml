@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eduplaty-backend
+  namespace: eduplaty
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eduplaty-backend
+  template:
+    metadata:
+      labels:
+        app: eduplaty-backend
+    spec:
+      containers:
+        - name: eduplaty-backend
+          image: suhas15234/eduplaty-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/eduplaty_db?useSSL=false&allowPublicKeyRetrieval=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eduplaty-backend
+  namespace: eduplaty
+spec:
+  selector:
+    app: eduplaty-backend
+  ports:
+    - port: 8080
+      targetPort: 8080
